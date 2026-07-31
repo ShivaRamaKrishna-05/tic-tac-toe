@@ -1,77 +1,92 @@
-let boxes = document.querySelectorAll(".box");
-let resetBtn = document.querySelector("#reset-btn");
-let newGameBtn = document.querySelector("#new-btn");
-let msg = document.querySelector("#msg");
-let msgContainer = document.querySelector(".msg-container");
+const boxes = document.querySelectorAll(".box");
+const resetBtn = document.querySelector("#reset-btn");
+const newGameBtn = document.querySelector("#new-btn");
+const msgContainer = document.querySelector(".msg-container");
+const msg = document.querySelector("#msg");
 
 let turnO = true;
-const winPatterns=[
-    [0,1,2],
-    [0,3,6],
-    [0,4,8],
-    [1,4,7],
-    [2,5,8],
-    [2,4,6],
-    [3,4,5],
-    [6,7,8],
-];
-const resetGame = () => {
-     turnO = true;
-     enableBoxes();
-    msgContainer.classList.add("hide"); 
-     
-};
-const checkWinner = () => {
-    for(let pattern of winPatterns){
-        let pos1 = boxes[pattern[0]].innerText;
-        let pos2 = boxes[pattern[1]].innerText;
-        let pos3 = boxes[pattern[2]].innerText;
+let gameOver = false;
 
-           if(pos1 !="" && pos2 !="" && pos3 !=""){
-            if(pos1 === pos2 && pos2 === pos3){
-                showWinner(pos1);
-                return true;
-            }
-           }
+const winPatterns = [
+  [0, 1, 2],
+  [0, 3, 6],
+  [0, 4, 8],
+  [1, 4, 7],
+  [2, 5, 8],
+  [2, 4, 6],
+  [3, 4, 5],
+  [6, 7, 8],
+];
+
+const resetGame = () => {
+  turnO = true;
+  gameOver = false;
+  boxes.forEach((box) => {
+    box.innerText = "";
+    box.disabled = false;
+    box.style.backgroundColor = "#ffffc7";
+  });
+  msgContainer.classList.add("hide");
+};
+
+const showWinner = (winner) => {
+  msg.innerText = `🎉 Congratulations! Winner is ${winner}`;
+  msgContainer.classList.remove("hide");
+  gameOver = true;
+  disableBoxes();
+};
+
+const disableBoxes = () => {
+  boxes.forEach((box) => (box.disabled = true));
+};
+
+const checkWinner = () => {
+  for (let pattern of winPatterns) {
+    const [a, b, c] = pattern;
+
+    if (
+      boxes[a].innerText &&
+      boxes[a].innerText === boxes[b].innerText &&
+      boxes[a].innerText === boxes[c].innerText
+    ) {
+      boxes[a].style.backgroundColor = "#90ee90";
+      boxes[b].style.backgroundColor = "#90ee90";
+      boxes[c].style.backgroundColor = "#90ee90";
+
+      showWinner(boxes[a].innerText);
+      return true;
     }
-    return false;
+  }
+  return false;
+};
+
+const checkDraw = () => {
+  let filled = 0;
+  boxes.forEach((box) => {
+    if (box.innerText !== "") filled++;
+  });
+
+  if (filled === 9 && !gameOver) {
+    msg.innerText = "😅 It's a Draw!";
+    msgContainer.classList.remove("hide");
+    disableBoxes();
+  }
 };
 
 boxes.forEach((box) => {
-    box.addEventListener("click",()=>{
-     if (turnO){
-        box.innerText="O";
-        turnO =false;
-     } else{
-        box.innerText ="X";
-        turnO = true;
-     }
-     box.disabled = true;
-     checkWinner();
-    });   
+  box.addEventListener("click", () => {
+    if (gameOver) return;
+
+    box.innerText = turnO ? "O" : "X";
+    box.disabled = true;
+    turnO = !turnO;
+
+    if (!checkWinner()) {
+      checkDraw();
+    }
+  });
 });
 
-const disableBoxes =()=>{
-    for(let box of boxes){
-        box.disabled = true;
-    }
-
-};
-const enableBoxes =()=>{
-    for(let box of boxes){
-        box.disabled = false;
-     box.innerText = " ";
-    }
-
-};
-const showWinner = (winner)=>{
-    msg.innerText=`Congratulations,Winner is ${winner}`;
-    msgContainer.classList.remove("hide");
-    disableBoxes();
-};
-
-newGameBtn.addEventListener("click",resetGame);
-resetBtn.addEventListener("click",resetGame);
-
-
+resetBtn.addEventListener("click", resetGame);
+newGameBtn.addEventListener("click", resetGame);
  
